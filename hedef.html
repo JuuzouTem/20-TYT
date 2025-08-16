@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>20 Günlük Birleşik TYT Çalışma Programı</title>
-
-    <!-- Firebase SDK (Software Development Kit) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
     <style>
         /* --- Genel Stiller ve Değişkenler (Referans Koddan Alındı) --- */
         :root {
@@ -273,59 +267,9 @@
             transform: rotate(45deg);
         }
 
-        /* --- YENİ EKLENEN KİMLİK DOĞRULAMA STİLLERİ --- */
-        #auth-container { max-width: 400px; margin: 50px auto; padding: 30px; background-color: var(--card-color); border-radius: 12px; }
-        #auth-container h2 { text-align: center; margin-bottom: 20px; color: var(--accent-color); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: var(--text-muted-color); }
-        .form-group input { width: 100%; padding: 10px; background-color: var(--primary-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1rem; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: var(--accent-color); color: white; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s; }
-        .btn:hover { background-color: #d83a56; }
-        #auth-toggle { text-align: center; margin-top: 20px; color: var(--text-muted-color); }
-        #auth-toggle a { color: var(--accent-color); text-decoration: none; cursor: pointer; }
-        #auth-error { color: #ff5252; text-align: center; margin-top: 15px; display: none; }
-        .hidden { display: none; }
-        #logout-btn { width: auto; padding: 10px 20px; font-size: 0.9rem; background-color: var(--primary-color); border: 1px solid var(--accent-color); }
-        #logout-btn:hover { background-color: var(--accent-color); }
-
     </style>
 </head>
 <body>
-
-    <!-- GİRİŞ/KAYIT EKRANI -->
-    <div id="auth-container">
-        <!-- Giriş Formu -->
-        <form id="login-form">
-            <h2>Giriş Yap</h2>
-            <p id="auth-error" class="error-message"></p>
-            <div class="form-group">
-                <label for="login-email">E-posta</label>
-                <input type="email" id="login-email" required>
-            </div>
-            <div class="form-group">
-                <label for="login-password">Şifre</label>
-                <input type="password" id="login-password" required>
-            </div>
-            <button type="submit" class="btn">Giriş Yap</button>
-            <p id="auth-toggle">Hesabın yok mu? <a id="show-signup">Kayıt Ol</a></p>
-        </form>
-
-        <!-- Kayıt Formu (Başlangıçta Gizli) -->
-        <form id="signup-form" class="hidden">
-            <h2>Kayıt Ol</h2>
-            <p id="auth-error-signup" class="error-message"></p>
-            <div class="form-group">
-                <label for="signup-email">E-posta</label>
-                <input type="email" id="signup-email" required>
-            </div>
-            <div class="form-group">
-                <label for="signup-password">Şifre (En az 6 karakter)</label>
-                <input type="password" id="signup-password" required>
-            </div>
-            <button type="submit" class="btn">Kayıt Ol</button>
-            <p id="auth-toggle">Zaten bir hesabın var mı? <a id="show-login">Giriş Yap</a></p>
-        </form>
-    </div>
 
     <div class="container">
         <header>
@@ -364,26 +308,8 @@
         </main>
 
     </div>
+
     <script>
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDmi3O8C1q58ESDyp2hE29YLhCqysc3rYs",
-  authDomain: "tyt-programim-67d4f.firebaseapp.com",
-  projectId: "tyt-programim-67d4f",
-  storageBucket: "tyt-programim-67d4f.firebasestorage.app",
-  messagingSenderId: "235629282000",
-  appId: "1:235629282000:web:bd6cf1c4e88f0bc469d4d5"
-};
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    
-    // --- GLOBAL DEĞİŞKENLER ---
-    let currentUser = null; // Giriş yapmış kullanıcıyı tutacak
-    let completedStatus = {}; // Kullanıcının ilerleme durumunu tutacak
-
-
     document.addEventListener('DOMContentLoaded', () => {
         
         // --- 20 GÜNLÜK BİRLEŞİK PLAN VERİLERİ ---
@@ -417,125 +343,58 @@ const firebaseConfig = {
         let completedStatus = {};
 
         // --- DOM Elementleri ---
-        const authContainer = document.getElementById('auth-container');
-        const mainContainer = document.getElementById('main-container');
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const showSignup = document.getElementById('show-signup');
-        const showLogin = document.getElementById('show-login');
-        const logoutBtn = document.getElementById('logout-btn');
-        const authError = document.getElementById('auth-error');
-        const authErrorSignup = document.getElementById('auth-error-signup');
         const planContainer = document.getElementById('plan-container');
         const totalTimeValue = document.getElementById('total-time-value');
         const completedDaysValue = document.getElementById('completed-days-value');
         const completionPercentageValue = document.getElementById('completion-percentage-value');
+        
         const totalTimeProgress = document.getElementById('total-time-progress');
         const completedDaysProgress = document.getElementById('completed-days-progress');
         const completionPercentageProgress = document.getElementById('completion-percentage-progress');
 
-        // --- KİMLİK DOĞRULAMA İŞLEMLERİ ---
-
-        // Formlar arası geçiş
-        showSignup.addEventListener('click', () => {
-            loginForm.classList.add('hidden');
-            signupForm.classList.remove('hidden');
-        });
-        showLogin.addEventListener('click', () => {
-            signupForm.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-        });
-
-        // Kayıt Olma
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = signupForm['signup-email'].value;
-            const password = signupForm['signup-password'].value;
-            auth.createUserWithEmailAndPassword(email, password).catch(err => {
-                authErrorSignup.textContent = err.message;
-                authErrorSignup.style.display = 'block';
-            });
-        });
-
-        // Giriş Yapma
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = loginForm['login-email'].value;
-            const password = loginForm['login-password'].value;
-            auth.signInWithEmailAndPassword(email, password).catch(err => {
-                authError.textContent = err.message;
-                authError.style.display = 'block';
-            });
-        });
-
-        // Çıkış Yapma
-        logoutBtn.addEventListener('click', () => {
-            auth.signOut();
-        });
-
-        // Kullanıcı durumunu dinle (Giriş/Çıkış)
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                // Kullanıcı giriş yaptı
-                currentUser = user;
-                authContainer.classList.add('hidden');
-                mainContainer.classList.remove('hidden');
-                loadProgressFromFirestore(); // Firestore'dan verileri yükle
-            } else {
-                // Kullanıcı çıkış yaptı
-                currentUser = null;
-                mainContainer.classList.add('hidden');
-                authContainer.classList.remove('hidden');
-                // UI'ı temizle
-                planContainer.innerHTML = '';
-            }
-        });
-
         // --- FONKSİYONLAR ---
 
-        function saveProgressToFirestore() {
-            if (!currentUser) return;
-            db.collection('users').doc(currentUser.uid).set({
-                progress: completedStatus
-            }).catch(err => console.error("Veri kaydetme hatası: ", err));
+        function saveProgress() {
+            localStorage.setItem('tytCombinedPlanProgress', JSON.stringify(completedStatus));
         }
 
-        async function loadProgressFromFirestore() {
-            if (!currentUser) return;
-            const docRef = db.collection('users').doc(currentUser.uid);
-            const doc = await docRef.get();
-
-            if (doc.exists && doc.data().progress) {
-                completedStatus = doc.data().progress;
+        function loadProgress() {
+            const savedProgress = localStorage.getItem('tytCombinedPlanProgress');
+            if (savedProgress) {
+                completedStatus = JSON.parse(savedProgress);
             } else {
-                // Yeni kullanıcı için başlangıç durumu oluştur
                 planData.forEach(day => completedStatus[day.day] = false);
-                saveProgressToFirestore(); // Veritabanında ilk kaydı oluştur
             }
-            // Veriler yüklendikten sonra UI'ı başlat
-            initializeAppUI();
         }
 
         function updateStats() {
-            let completedTime = 0, completedDays = 0;
+            let completedTime = 0;
+            let completedDays = 0;
+
             planData.forEach(day => {
                 if (completedStatus[day.day]) {
                     completedTime += day.total;
                     completedDays++;
                 }
             });
+            
             const timePercent = (completedTime / TOTAL_TIME) * 100;
             const daysPercent = (completedDays / TOTAL_DAYS) * 100;
+
+            // Değerleri güncelle
             totalTimeValue.textContent = `${completedTime} / ${TOTAL_TIME} dk`;
             completedDaysValue.textContent = `${completedDays} / ${TOTAL_DAYS}`;
             completionPercentageValue.textContent = `%${daysPercent.toFixed(0)}`;
+
+            // İlerleme çubuklarını güncelle
             totalTimeProgress.style.width = `${timePercent}%`;
             completedDaysProgress.style.width = `${daysPercent}%`;
             completionPercentageProgress.style.width = `${daysPercent}%`;
         }
         
         function updateUICards() {
-             document.querySelectorAll('.day-card').forEach(card => {
+             const cards = document.querySelectorAll('.day-card');
+             cards.forEach(card => {
                  const day = card.dataset.day;
                  if (completedStatus[day]) {
                      card.classList.add('completed');
@@ -593,7 +452,7 @@ const firebaseConfig = {
             if (e.target.matches('input[type="checkbox"]')) {
                 const day = e.target.dataset.day;
                 completedStatus[day] = e.target.checked;
-                saveProgressToFirestore(); // Değişikliği anında veritabanına kaydet
+                saveProgress();
                 updateStats();
                 updateUICards();
             }
